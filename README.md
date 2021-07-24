@@ -55,7 +55,7 @@ CLI client/wallet for Tezos.
 
 1. **Download Tezedge Client source code**
     ```bash
-    git clone https://github.com/tezedge/tezedge-client
+    git clone https://github.com/boltlabs-inc/tezedge-client.git
     cd tezedge-client
     ```
 1. **Set desired Rust toolchain version for tezedge-client**
