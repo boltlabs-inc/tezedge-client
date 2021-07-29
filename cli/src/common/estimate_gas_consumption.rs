@@ -1,5 +1,5 @@
-use lib::{NewOperationGroup, NewTransactionParameters, ManagerParameter, Address};
-use lib::api::{RunOperation, RunOperationError, RunOperationContents};
+use lib::api::{RunOperation, RunOperationContents, RunOperationError};
+use lib::{Address, ManagerParameter, NewOperationGroup, NewTransactionParameters};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct OperationGroupGasConsumption {
@@ -10,42 +10,38 @@ pub struct OperationGroupGasConsumption {
 
 impl OperationGroupGasConsumption {
     pub fn total(&self) -> u64 {
-        self.reveal.unwrap_or(0)
-            + self.transaction.unwrap_or(0)
-            + self.delegation.unwrap_or(0)
+        self.reveal.unwrap_or(0) + self.transaction.unwrap_or(0) + self.delegation.unwrap_or(0)
     }
 }
 
-fn find_consumed_gas_for_kind(
-    kind: &str,
-    run_op_contents: &RunOperationContents,
-) -> Option<u64> {
-    run_op_contents.iter()
+fn find_consumed_gas_for_kind(kind: &str, run_op_contents: &RunOperationContents) -> Option<u64> {
+    run_op_contents
+        .iter()
         .find(|op| op.kind.as_str() == kind)
         // Add 100 for safety
         .map(|op| op.consumed_gas + 100)
 }
 
-
 pub fn estimate_gas_consumption<A>(
     op: &NewOperationGroup,
     api: &A,
 ) -> Result<OperationGroupGasConsumption, RunOperationError>
-    where A: RunOperation + ?Sized,
+where
+    A: RunOperation + ?Sized,
 {
     let op_results = api.run_operation(op)?;
     // additional gas required when sending/delegating from Smart Contract (KT1).
-    let tx_additional_gas = op.transaction.as_ref()
+    let tx_additional_gas = op
+        .transaction
+        .as_ref()
         .map(|op| {
-            use NewTransactionParameters::*;
             use ManagerParameter::*;
+            use NewTransactionParameters::*;
             match op.parameters.as_ref() {
-                Some(Manager(Transfer { to, .. })) => {
-                    match to {
-                        Address::Implicit(_) => 1427,
-                        Address::Originated(_) => 2863,
-                    }
-                }
+                Some(Manager(Transfer { to, .. })) => match to {
+                    Address::Implicit(_) => 1427,
+                    Address::Originated(_) => 2863,
+                },
                 Some(Manager(SetDelegate(_))) => 1000,
                 Some(Manager(CancelDelegate)) => 1000,
                 Some(Custom { .. }) => 0, // Unknown gas consumption

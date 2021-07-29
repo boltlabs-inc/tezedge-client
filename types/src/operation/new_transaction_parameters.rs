@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::micheline::{Micheline, MichelineEntrypoint};
 
@@ -16,5 +16,5 @@ pub enum NewTransactionParameters {
     Custom {
         entrypoint: MichelineEntrypoint,
         data: Micheline,
-    }
+    },
 }

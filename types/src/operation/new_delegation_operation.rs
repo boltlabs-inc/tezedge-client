@@ -1,8 +1,10 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
+use super::{ManagerParameter, NewOperation, NewTransactionOperation, NewTransactionParameters};
+use crate::{
+    Forge, ImplicitAddress, ImplicitOrOriginatedWithManager, OriginatedAddressWithManager,
+};
 use utils::estimate_operation_fee;
-use crate::{Forge, ImplicitAddress, ImplicitOrOriginatedWithManager, OriginatedAddressWithManager};
-use super::{NewOperation, NewTransactionOperation, NewTransactionParameters, ManagerParameter};
 
 #[derive(Debug, Clone)]
 pub struct NewDelegationOperationBuilder {
@@ -31,20 +33,15 @@ impl NewDelegationOperationBuilder {
     pub fn build(self) -> NewOperation {
         use ImplicitOrOriginatedWithManager::*;
         match self.source {
-            Implicit(source) => {
-                NewOperation::Delegation(NewDelegationOperation {
-                    source,
-                    delegate_to: self.delegate_to,
-                    fee: self.fee,
-                    counter: self.counter,
-                    gas_limit: self.gas_limit,
-                    storage_limit: self.storage_limit,
-                })
-            }
-            OriginatedWithManager(OriginatedAddressWithManager {
-                address,
-                manager,
-            }) => {
+            Implicit(source) => NewOperation::Delegation(NewDelegationOperation {
+                source,
+                delegate_to: self.delegate_to,
+                fee: self.fee,
+                counter: self.counter,
+                gas_limit: self.gas_limit,
+                storage_limit: self.storage_limit,
+            }),
+            OriginatedWithManager(OriginatedAddressWithManager { address, manager }) => {
                 let parameters = match self.delegate_to {
                     Some(delegate) => ManagerParameter::SetDelegate(delegate),
                     None => ManagerParameter::CancelDelegate,

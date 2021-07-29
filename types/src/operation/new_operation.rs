@@ -1,7 +1,9 @@
 use serde::Serialize;
 
+use super::{
+    NewDelegationOperation, NewOriginationOperation, NewRevealOperation, NewTransactionOperation,
+};
 use utils::estimate_operation_fee;
-use super::{NewRevealOperation, NewTransactionOperation, NewDelegationOperation, NewOriginationOperation};
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(untagged)]

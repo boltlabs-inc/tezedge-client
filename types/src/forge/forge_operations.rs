@@ -1,25 +1,24 @@
-use crate::{
-    Address, ImplicitAddress, OriginatedAddress,
-    NewOperationGroup, NewOperation, PublicKey,
-    NewOriginationOperation, NewOriginationScript,
-    NewDelegationOperation, NewTransactionOperation, NewRevealOperation,
-};
 use super::{Forge, ForgeNat, Forged};
+use crate::{
+    Address, ImplicitAddress, NewDelegationOperation, NewOperation, NewOperationGroup,
+    NewOriginationOperation, NewOriginationScript, NewRevealOperation, NewTransactionOperation,
+    OriginatedAddress, PublicKey,
+};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub enum OperationTag {
-    Endorsement         = 0,
+    Endorsement = 0,
     SeedNonceRevelation = 1,
-    DoubleEndorsement   = 2,
-    DoubleBaking        = 3,
-    Activation          = 4,
-    Proposals           = 5,
-    Ballot              = 6,
-    Reveal              = 107,
-    Transaction         = 108,
-    Origination         = 109,
-    Delegation          = 110,
+    DoubleEndorsement = 2,
+    DoubleBaking = 3,
+    Activation = 4,
+    Proposals = 5,
+    Ballot = 6,
+    Reveal = 107,
+    Transaction = 108,
+    Origination = 109,
+    Delegation = 110,
 }
 
 impl ForgeNat for OperationTag {
@@ -56,12 +55,8 @@ impl Forge for Address {
     /// the output and the result will be invalid.
     fn forge(&self) -> Forged {
         Forged(match self {
-            Address::Implicit(addr) => {
-                [vec![0], addr.forge().take()].concat()
-            }
-            Address::Originated(addr) => {
-                [vec![1], addr.forge().take()].concat()
-            }
+            Address::Implicit(addr) => [vec![0], addr.forge().take()].concat(),
+            Address::Originated(addr) => [vec![1], addr.forge().take()].concat(),
         })
     }
 }
@@ -70,12 +65,7 @@ impl Forge for Address {
 /// use [NewTransactionParameters::SetDelegate](crate::NewTransactionParameters::SetDelegate)
 fn forge_delegate_addr(addr: &Option<ImplicitAddress>) -> Forged {
     Forged(match addr.as_ref() {
-        Some(addr) => {
-            [
-                true.forge().take(),
-                addr.forge().take(),
-            ].concat()
-        }
+        Some(addr) => [true.forge().take(), addr.forge().take()].concat(),
         None => false.forge().take(),
     })
 }
@@ -92,84 +82,102 @@ impl Forge for PublicKey {
 
 impl Forge for NewRevealOperation {
     fn forge(&self) -> Forged {
-        Forged([
-            OperationTag::Reveal.forge_nat().take(),
-            self.source.forge().take(),
-            self.fee.forge_nat().take(),
-            self.counter.forge_nat().take(),
-            self.gas_limit.forge_nat().take(),
-            self.storage_limit.forge_nat().take(),
-            self.public_key.forge().take(),
-        ].concat())
+        Forged(
+            [
+                OperationTag::Reveal.forge_nat().take(),
+                self.source.forge().take(),
+                self.fee.forge_nat().take(),
+                self.counter.forge_nat().take(),
+                self.gas_limit.forge_nat().take(),
+                self.storage_limit.forge_nat().take(),
+                self.public_key.forge().take(),
+            ]
+            .concat(),
+        )
     }
 }
 
 impl Forge for NewTransactionOperation {
     fn forge(&self) -> Forged {
         let forged_parameters = match &self.parameters {
-            Some(params) => [
-                true.forge().take(),
-                params.forge().take(),
-            ].concat(),
+            Some(params) => [true.forge().take(), params.forge().take()].concat(),
             None => false.forge().take(),
         };
 
-        Forged([
-            OperationTag::Transaction.forge_nat().take(),
-            self.source.forge().take(),
-            self.fee.forge_nat().take(),
-            self.counter.forge_nat().take(),
-            self.gas_limit.forge_nat().take(),
-            self.storage_limit.forge_nat().take(),
-            self.amount.forge_nat().take(),
-            self.destination.forge().take(),
-            forged_parameters,
-        ].concat())
+        Forged(
+            [
+                OperationTag::Transaction.forge_nat().take(),
+                self.source.forge().take(),
+                self.fee.forge_nat().take(),
+                self.counter.forge_nat().take(),
+                self.gas_limit.forge_nat().take(),
+                self.storage_limit.forge_nat().take(),
+                self.amount.forge_nat().take(),
+                self.destination.forge().take(),
+                forged_parameters,
+            ]
+            .concat(),
+        )
     }
 }
 
 impl Forge for NewDelegationOperation {
     fn forge(&self) -> Forged {
-        Forged([
-            OperationTag::Delegation.forge_nat().take(),
-            self.source.forge().take(),
-            self.fee.forge_nat().take(),
-            self.counter.forge_nat().take(),
-            self.gas_limit.forge_nat().take(),
-            self.storage_limit.forge_nat().take(),
-            forge_delegate_addr(&self.delegate_to).take()
-        ].concat())
+        Forged(
+            [
+                OperationTag::Delegation.forge_nat().take(),
+                self.source.forge().take(),
+                self.fee.forge_nat().take(),
+                self.counter.forge_nat().take(),
+                self.gas_limit.forge_nat().take(),
+                self.storage_limit.forge_nat().take(),
+                forge_delegate_addr(&self.delegate_to).take(),
+            ]
+            .concat(),
+        )
     }
 }
 
 impl Forge for NewOriginationScript {
     fn forge(&self) -> Forged {
-        Forged([
-            self.code.forge().take()
-                // forge as an array
-                .forge().take(),
-            self.storage.forge().take()
-                // forge as an array
-                .forge().take(),
-        ].concat())
+        Forged(
+            [
+                self.code
+                    .forge()
+                    .take()
+                    // forge as an array
+                    .forge()
+                    .take(),
+                self.storage
+                    .forge()
+                    .take()
+                    // forge as an array
+                    .forge()
+                    .take(),
+            ]
+            .concat(),
+        )
     }
 }
 
 impl Forge for NewOriginationOperation {
     fn forge(&self) -> Forged {
-        Forged([
-            OperationTag::Origination.forge_nat().take(),
-            self.source.forge().take(),
-            self.fee.forge_nat().take(),
-            self.counter.forge_nat().take(),
-            self.gas_limit.forge_nat().take(),
-            self.storage_limit.forge_nat().take(),
-            self.balance.forge_nat().take(),
-            // TODO: research what `delegate` field is for in origination type
-            // and replace this with forging delegate.
-            false.forge().take(),
-            self.script.forge().take(),
-        ].concat())
+        Forged(
+            [
+                OperationTag::Origination.forge_nat().take(),
+                self.source.forge().take(),
+                self.fee.forge_nat().take(),
+                self.counter.forge_nat().take(),
+                self.gas_limit.forge_nat().take(),
+                self.storage_limit.forge_nat().take(),
+                self.balance.forge_nat().take(),
+                // TODO: research what `delegate` field is for in origination type
+                // and replace this with forging delegate.
+                false.forge().take(),
+                self.script.forge().take(),
+            ]
+            .concat(),
+        )
     }
 }
 
@@ -186,11 +194,15 @@ impl Forge for NewOperation {
 
 impl Forge for NewOperationGroup {
     fn forge(&self) -> Forged {
-        Forged([
-            self.branch.forge().take(),
-            self.to_operations_vec().into_iter()
-                .flat_map(|op| op.forge().take())
-                .collect(),
-        ].concat())
+        Forged(
+            [
+                self.branch.forge().take(),
+                self.to_operations_vec()
+                    .into_iter()
+                    .flat_map(|op| op.forge().take())
+                    .collect(),
+            ]
+            .concat(),
+        )
     }
 }

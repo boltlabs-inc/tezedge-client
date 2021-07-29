@@ -77,7 +77,8 @@ impl Forge for MichelineEntrypoint {
                     (custom.len() as u8).to_be_bytes().to_vec(),
                     vec![0, 0, 0],
                     custom.as_bytes().to_vec(),
-                ].concat()
+                ]
+                .concat()
             }
         })
     }
@@ -126,9 +127,7 @@ impl MichelinePrim {
 
     /// Adds arg to current `args` list.
     pub fn with_arg(mut self, arg: Micheline) -> Self {
-        self.args
-            .get_or_insert_with(|| vec![])
-            .push(arg);
+        self.args.get_or_insert_with(|| vec![]).push(arg);
         self
     }
 
@@ -140,9 +139,7 @@ impl MichelinePrim {
 
     /// Adds annotation to current annotations list.
     pub fn with_annot(mut self, annotation: Annotation) -> Self {
-        self.annots
-            .get_or_insert_with(|| vec![])
-            .push(annotation);
+        self.annots.get_or_insert_with(|| vec![]).push(annotation);
         self
     }
 }
@@ -177,12 +174,13 @@ impl Forge for MichelinePrim {
         match &self.annots {
             Some(annots) if annots.len() > 0 => {
                 res.extend(
-                    annots.iter()
+                    annots
+                        .iter()
                         .map(|annot| annot.to_string())
                         .collect::<Vec<String>>()
                         .join(" ")
                         .forge()
-                        .take()
+                        .take(),
                 );
             }
             _ => {}

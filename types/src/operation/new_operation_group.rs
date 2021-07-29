@@ -1,13 +1,10 @@
 use serde::Serialize;
 
-use crate::BlockHash;
 use super::{
-    NewOperation,
-    NewRevealOperation,
+    NewDelegationOperation, NewOperation, NewOriginationOperation, NewRevealOperation,
     NewTransactionOperation,
-    NewDelegationOperation,
-    NewOriginationOperation,
 };
+use crate::BlockHash;
 
 /// Group/Batch of Operations.
 #[derive(Serialize, Debug, Clone)]
@@ -57,7 +54,8 @@ impl NewOperationGroup {
     }
 
     pub fn with_operation<T>(self, op: T) -> Self
-        where T: Into<NewOperation>,
+    where
+        T: Into<NewOperation>,
     {
         match op.into() {
             NewOperation::Reveal(op) => self.with_reveal(op),

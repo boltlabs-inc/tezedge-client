@@ -6,4 +6,3 @@ pub fn contract_code_forged() -> Forged {
     let d = hex::decode(s.trim()).unwrap();
     Forged::new_unchecked(d)
 }
-

@@ -1,8 +1,8 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    Forge, NewTransactionParameters, ManagerParameter, Address, ImplicitAddress,
-    ImplicitOrOriginatedWithManager, OriginatedAddressWithManager,
+    Address, Forge, ImplicitAddress, ImplicitOrOriginatedWithManager, ManagerParameter,
+    NewTransactionParameters, OriginatedAddressWithManager,
 };
 use utils::estimate_operation_fee;
 
@@ -21,18 +21,16 @@ impl NewTransactionOperationBuilder {
     pub fn build(self) -> NewTransactionOperation {
         use ImplicitOrOriginatedWithManager::*;
         match self.source {
-            Implicit(source) => {
-                NewTransactionOperation {
-                    source,
-                    destination: self.destination,
-                    amount: self.amount,
-                    fee: self.fee,
-                    counter: self.counter,
-                    gas_limit: self.gas_limit,
-                    storage_limit: self.storage_limit,
-                    parameters: None,
-                }
-            }
+            Implicit(source) => NewTransactionOperation {
+                source,
+                destination: self.destination,
+                amount: self.amount,
+                fee: self.fee,
+                counter: self.counter,
+                gas_limit: self.gas_limit,
+                storage_limit: self.storage_limit,
+                parameters: None,
+            },
             OriginatedWithManager(OriginatedAddressWithManager { address, manager }) => {
                 NewTransactionOperation {
                     source: manager,
@@ -46,7 +44,7 @@ impl NewTransactionOperationBuilder {
                         ManagerParameter::Transfer {
                             to: self.destination,
                             amount: self.amount,
-                        }
+                        },
                     )),
                 }
             }
