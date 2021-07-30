@@ -1,6 +1,11 @@
 use crate::zkchannels::InitialStorage;
 
-pub fn initial_storage() -> InitialStorage {
+pub fn initial_storage(
+    cust_addr: String,
+    merch_addr: String,
+    cust_funding: String,
+    merch_funding: String,
+) -> InitialStorage {
     InitialStorage {
         // cid: String::from("0x49e2bf68c90fdb873853320c6e5a7ec5bd00b72e17e6cd96c1de19b0e9652d4b"),
         cid: String::from("49e2bf68c90fdb873853320c6e5a7ec5bd00b72e17e6cd96c1de19b0e9652d4b"),
@@ -9,15 +14,15 @@ pub fn initial_storage() -> InitialStorage {
         close_flag: String::from("1a5dd750f1dac8698369bcede9f13ba6c99ecfced8d5ac366219c245d24f4b36"),
 
         context_string: String::from("49e2bf68c90fdb873853320c6e5a7ec5bd00b72e17e6cd96c1de19b0e9652d4b"),
-        custAddr: String::from("tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx"),
+        custAddr: cust_addr, // String::from("tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx"),
         custBal: String::from("0"),
-        custFunding: String::from("20000000"),
+        custFunding: cust_funding, // String::from("20000000"),
         custPk: String::from("edpku5Ei6Dni4qwoJGqXJs13xHfyu4fhUg6zqZkFyiEh1mQhFD3iZE"),
         delayExpiry: String::from("0"),
         g2: String::from("12ade57fe34fbe7a6fdcb1fc0d828cb3a5ef7fd346f5ea5cbea3b93e4514fae09d674b4d66d3bc673c4f831c8e24b8780fffb940d1776bfa796992c6d8f3d1a009394bbaf590fa2997ff97ba4c8dca3df4a2fc1d8059c2ccf914322823d870b00770ad29db057f19b894748ea2b1b622c00d94d5a412d61c7a0797f6d5c7b5d22e7bffd3f6f87158105020f9c625941b055c2555b5dcefc3c1b40f1098a3546e655e91c94ceb5db3f3ecd405caf39b2dda56412ebf3796e54043b0cc8d30558b"),
-        merchAddr: String::from("tz1gjaF81ZRRvdzjobyfVNsAeSC6PScjfQwN"),
+        merchAddr: merch_addr, // String::from("tz1gjaF81ZRRvdzjobyfVNsAeSC6PScjfQwN"),
         merchBal: String::from("0"),
-        merchFunding: String::from("10000000"),
+        merchFunding: merch_funding, // String::from("10000000"),
         merchPk: String::from("edpkuQd8M26sz4ynC7nfer8J2CH5fou9eseszHbdGMLz3e1WSj9cmR"),
         merchPk0: String::from("189d6846b9a2bfada602de7ebc71aa26e0ad4843bd84ced29d8ca7018978ab8e616a38bd5f23038b8c27e20d99390f4200742ab26fe59700aa9ecbfa035511c57af541a9166641088a47d09338811aecaaa399e0c95d6d8e422b318f68fac3b812808658af18177e7f3198e15279e66eebb2c5638d8c1f8a2683174fb21ae70504a1ebd3590d4f65e292c09c7b52abe810c139a8fa243314fa60922d528b240d03d2e7714a47ae3fb8999cbae79c9a0bfc3a1ed1d6cd0d313285ab29ce297087"),
         merchPk1: String::from("03624627ed9666b0a5be2789b9c9b5853d8d5cbd42ceb2159a439d83051676c63ae1fe8e7d484cdae6990cfbf61cfd6b12797a845850d7ed720f918929c8808abe9be8b21083e851d5c5c76c8988fe33c7ef6f56626262e8f2981fea3eca9c79095c0ab2f8ec415567309c89b31822467eb89f0b6005ce888da1fa9a6486ae6bb22dd5c33c81de51ae9d4b00e54ab75b01d7dab85e39a65bde59380b8ed0603dd8256677bc18f595e79a632df8bec510730c966db477313a1a6d2b581ae1700e"),

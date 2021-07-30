@@ -18,12 +18,16 @@ async fn test_zkchannels_contract_sample1() {
     let account = account_1();
 
     let signer = LocalSigner::new(account.public_key.clone(), account.private_key.clone());
+    let cust_addr = String::from("tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx");
+    let merch_addr = String::from("tz1gjaF81ZRRvdzjobyfVNsAeSC6PScjfQwN");
+    let cust_funding = String::from("20000000");
+    let merch_funding = String::from("10000000");
 
     let op = NewOriginationOperation {
         source: account.address.clone().into(),
         script: NewOriginationScript {
             code: contract_code_forged(),
-            storage: samples::sample1::initial_storage().into(),
+            storage: samples::sample1::initial_storage(cust_addr, merch_addr, cust_funding, merch_funding).into(),
         },
         balance: parse_float_amount("0.01").unwrap(),
         fee: parse_float_amount("0.1").unwrap(),
