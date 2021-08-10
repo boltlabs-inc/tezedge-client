@@ -1,12 +1,12 @@
-use std::fmt::{self, Display};
 use serde::{Deserialize, Deserializer};
+use std::fmt::{self, Display};
 
-use types::{
-    Address, ImplicitAddress, OriginatedAddress,
-    PublicKey, BlockHash, OperationHash, FromPrefixedBase58CheckError,
-};
-use crate::BoxFuture;
 use crate::api::TransportError;
+use crate::BoxFuture;
+use types::{
+    Address, BlockHash, FromPrefixedBase58CheckError, ImplicitAddress, OperationHash,
+    OriginatedAddress, PublicKey,
+};
 
 #[derive(thiserror::Error, Debug)]
 pub enum BlockGetOperationsError {
@@ -21,7 +21,7 @@ impl Display for BlockGetOperationsError {
         match self {
             Self::Transport(err) => err.fmt(f),
             Self::Base58Decode(err) => err.fmt(f),
-            Self::Unknown(err) => write!(f, "Unknown! {}", err)
+            Self::Unknown(err) => write!(f, "Unknown! {}", err),
         }
     }
 }
@@ -108,7 +108,8 @@ pub enum BlockOperationContent {
 
 impl<'de> Deserialize<'de> for BlockOperationContent {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[allow(non_camel_case_types)]
         #[derive(Deserialize)]
@@ -148,7 +149,10 @@ pub trait BlockGetOperations {
 
 pub trait BlockGetOperationsAsync {
     /// Get head block's hash.
-    fn block_get_operations(&self, block: &BlockHash) -> BoxFuture<'static, BlockGetOperationsResult>;
+    fn block_get_operations(
+        &self,
+        block: &BlockHash,
+    ) -> BoxFuture<'static, BlockGetOperationsResult>;
 }
 
 pub(crate) fn block_get_operations_url(base_url: &str, block_hash: &str) -> String {

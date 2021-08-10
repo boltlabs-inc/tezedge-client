@@ -1,9 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::error::Error;
-use serde::{Serialize, Deserialize};
 
-use types::{Network, Address, ImplicitAddress};
 use crate::UnsupportedNetworkError;
+use types::{Address, ImplicitAddress, Network};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Baker {
@@ -80,14 +80,20 @@ impl TzStats {
     }
 
     pub fn get_bakers(&self) -> Result<Vec<Baker>, Box<dyn Error>> {
-        Ok(ureq::get(&format!("{}/explorer/bakers", self.api_endpoint_url()))
-            .call()?
-            .into_json()?)
+        Ok(
+            ureq::get(&format!("{}/explorer/bakers", self.api_endpoint_url()))
+                .call()?
+                .into_json()?,
+        )
     }
 
     pub fn get_operation(&self, operation_hash: &str) -> Result<Vec<Operation>, Box<dyn Error>> {
-        Ok(ureq::get(&format!("{}/explorer/op/{}", self.api_endpoint_url(), operation_hash))
-            .call()?
-            .into_json()?)
+        Ok(ureq::get(&format!(
+            "{}/explorer/op/{}",
+            self.api_endpoint_url(),
+            operation_hash
+        ))
+        .call()?
+        .into_json()?)
     }
 }

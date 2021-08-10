@@ -7,14 +7,14 @@ use tests_common::{build_sandbox_http_apis, sandbox_account_1, sandbox_account_2
 use rpc_api::api::*;
 use explorer_api::TzStats;
 use signer::LocalSigner;
-use types::{Address, Forge, Forged, Network, NewOperationGroup, NewOriginationOperation, NewOriginationScript, NewTransactionOperation, NewTransactionParameters, micheline::{Micheline, MichelineEntrypoint, MichelinePrim, PrimType}};
+use types::{Address, BlockHash, Forge, Forged, Network, NewOperationGroup, NewOriginationOperation, NewOriginationScript, NewTransactionOperation, NewTransactionParameters, micheline::{Micheline, MichelineEntrypoint, MichelinePrim, PrimType}};
 use utils::parse_float_amount;
 
 pub mod zkchannels;
 use zkchannels::{samples, contract_code_forged};
 
-async fn contract_origination_helper(cust_funding: String, merch_funding: String) -> String {
-    let (_, async_api) = build_sandbox_http_apis(18731);
+async fn contract_origination_helper(port: u32, cust_funding: String, merch_funding: String) -> String {
+    let (_, async_api) = build_sandbox_http_apis(port);
     let cust_account = sandbox_account_1();
     let merch_account = sandbox_account_2();
 
@@ -65,7 +65,7 @@ async fn contract_origination_helper(cust_funding: String, merch_funding: String
 
 #[tokio::test]
 async fn test_zkchannels_contract_sandbox() {
-    let (_, async_api) = build_sandbox_http_apis(18731);
+    let (_, async_api) = build_sandbox_http_apis(20000);
     let cust_account = sandbox_account_1();
     let merch_account = sandbox_account_2();
 
@@ -119,21 +119,55 @@ async fn test_zkchannels_contract_sandbox() {
 
 #[tokio::test]
 async fn test_add_funding_transaction_sandbox() {
-    // let cust_funding = String::from("30000000");
-    // let merch_funding = String::from("10000000");
-    // let op_hash = contract_origination_helper(cust_funding, merch_funding);
-    // println!("contract successfuly originated: {}", op_hash.await);
-    // TODO: get contract id from the op_hash
+    let port = 20000;
+    let cust_funding = String::from("30000000");
+    let merch_funding = String::from("10000000");
+    let contract_op_hash = contract_origination_helper(port, cust_funding, merch_funding).await;
+    println!("contract successfuly originated: {}", contract_op_hash);
 
-    // initiate transaction to fund the account
-    let (_, async_api) = build_sandbox_http_apis(18731);
+    // get contract id from the op_hash
+    let (_, async_api) = build_sandbox_http_apis(port);
+
+    // get the latest block hash and search until we find the contract address with operation hash
+    let latest_block_hash = async_api.get_head_block_hash().await.unwrap();
+    println!("[*] latest block hash: {:?}", latest_block_hash);
+
+    let mut contract_address = String::from("");
+    let block_operations = async_api.block_get_operations(&latest_block_hash).await.unwrap();
+    assert!(block_operations.len() >= 1);
+    let mut i = 0;
+    for o in block_operations {
+        i += 1;
+        println!("{} => block hash: {:?}", i, o.hash.to_base58check());
+        println!("{} => branch hash: {:?}", i, o.branch.to_base58check());
+        for c in o.contents {
+            match c {
+                BlockOperationContent::Origination(op) => {
+
+                    for contract in &op.metadata.operation_result.originated_contracts {
+                        println!("[!] contract address: {:?}", contract.to_base58check());
+                        println!("[!] Mismatch op-hash: {} ?= {}", o.hash.to_base58check(), contract_op_hash);
+                        // assert_eq!(o.hash.to_base58check(), contract_op_hash);
+                        contract_address = contract.to_base58check();
+                        // println!("[!] full op: {:?}", &op);
+                    }
+                },
+                BlockOperationContent::Reveal(_) => println!("reveal"),
+                BlockOperationContent::Transaction(_) => println!("transaction"),
+                BlockOperationContent::Delegation(_) => println!("delegation"),
+                BlockOperationContent::Other => println!("other"),
+            }
+        }
+    }
+
+    // // initiate transaction to fund the account
     let cust_account = sandbox_account_1();
     let signer = LocalSigner::new(cust_account.public_key.clone(), cust_account.private_key.clone());
 
     // now proceed with depositing funds into the contract
     let tx = NewTransactionOperation {
         source: cust_account.address.clone().into(),
-        destination: Address::from_base58check( "KT1WQiTwEtv3i48vxZdUrUWHs4vr4EeP5SVE").unwrap(),
+        destination: Address::from_base58check( contract_address.as_str()).unwrap(),
         amount: parse_float_amount("30.0").unwrap(),
         fee: parse_float_amount("0.01").unwrap(),
         counter: async_api.get_contract_counter(&cust_account.address).await.unwrap() + 1,

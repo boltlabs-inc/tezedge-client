@@ -1,11 +1,11 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryInto;
 use std::fmt::{self, Debug};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use crypto::{Prefix, WithPrefix, WithoutPrefix};
-use crypto::base58check::{FromBase58Check, ToBase58Check};
-use crate::{ImplicitAddress, FromPrefixedBase58CheckError};
 use super::ADDRESS_LEN;
+use crate::{FromPrefixedBase58CheckError, ImplicitAddress};
+use crypto::base58check::{FromBase58Check, ToBase58Check};
+use crypto::{Prefix, WithPrefix, WithoutPrefix};
 
 type OriginatedAddressInner = [u8; ADDRESS_LEN];
 
@@ -40,7 +40,9 @@ impl OriginatedAddress {
 
 impl ToBase58Check for OriginatedAddress {
     fn to_base58check(&self) -> String {
-        self.as_ref().with_prefix(self.get_prefix()).to_base58check()
+        self.as_ref()
+            .with_prefix(self.get_prefix())
+            .to_base58check()
     }
 }
 
@@ -58,24 +60,21 @@ impl Debug for OriginatedAddress {
 
 impl Serialize for OriginatedAddress {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
-        serializer.serialize_str(
-            &self.to_base58check()
-        )
+        serializer.serialize_str(&self.to_base58check())
     }
 }
 
 impl<'de> Deserialize<'de> for OriginatedAddress {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         let encoded = String::deserialize(deserializer)?;
 
-        Self::from_base58check(&encoded)
-            .map_err(|err| {
-                serde::de::Error::custom(err)
-            })
+        Self::from_base58check(&encoded).map_err(|err| serde::de::Error::custom(err))
     }
 }
 

@@ -142,7 +142,7 @@ pub enum PrimType {
     READ_TICKET,
     SPLIT_TICKET,
     JOIN_TICKETS,
-    GET_AND_UPDATE
+    GET_AND_UPDATE,
 }
 
 impl Into<u8> for PrimType {

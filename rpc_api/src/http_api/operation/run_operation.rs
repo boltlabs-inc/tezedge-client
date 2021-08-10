@@ -1,17 +1,14 @@
-use types::{NewOperationGroup, NewOperationWithKind};
 use crate::api::{
-    run_operation_url,
-    GetChainID, RunOperation, RunOperationResult,
-    TransportError, RunOperationError, RunOperationJson,
+    run_operation_url, GetChainID, RunOperation, RunOperationError, RunOperationJson,
+    RunOperationResult, TransportError,
 };
 use crate::http_api::HttpApi;
+use types::{NewOperationGroup, NewOperationWithKind};
 
 impl From<ureq::Error> for RunOperationError {
     fn from(error: ureq::Error) -> Self {
         match error {
-            ureq::Error::Transport(error) => {
-                Self::Transport(TransportError(Box::new(error)))
-            }
+            ureq::Error::Transport(error) => Self::Transport(TransportError(Box::new(error))),
             ureq::Error::Status(code, resp) => {
                 let status_text = resp.status_text().to_string();
                 Self::Unknown(format!(
@@ -35,11 +32,7 @@ impl From<std::io::Error> for RunOperationError {
 }
 
 impl RunOperation for HttpApi {
-    fn run_operation(
-        &self,
-        operation_group: &NewOperationGroup,
-    ) -> RunOperationResult
-    {
+    fn run_operation(&self, operation_group: &NewOperationGroup) -> RunOperationResult {
         Ok(self.client.post(&run_operation_url(&self.base_url))
            .send_json(ureq::json!({
                 "chain_id": self.get_chain_id()?,

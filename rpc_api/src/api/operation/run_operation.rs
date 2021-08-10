@@ -1,10 +1,10 @@
-use std::fmt::{self, Display};
-use serde::Deserialize;
 use serde::de;
+use serde::Deserialize;
+use std::fmt::{self, Display};
 
-use types::NewOperationGroup;
+use crate::api::{GetChainIDError, TransportError};
 use crate::BoxFuture;
-use crate::api::{TransportError, GetChainIDError};
+use types::NewOperationGroup;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RunOperationError {
@@ -44,7 +44,8 @@ pub struct RunOperationContent {
 
 impl<'de> Deserialize<'de> for RunOperationContent {
     fn deserialize<D>(d: D) -> Result<Self, D::Error>
-        where D: de::Deserializer<'de>,
+    where
+        D: de::Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct RawOperationResult {
@@ -79,10 +80,7 @@ pub trait RunOperation {
     ///
     /// Useful for calculating fees as is returns estimated consumed gas,
     /// and it doesn't require signing the operation first.
-    fn run_operation(
-        &self,
-        operation_group: &NewOperationGroup,
-    ) -> RunOperationResult;
+    fn run_operation(&self, operation_group: &NewOperationGroup) -> RunOperationResult;
 }
 
 pub trait RunOperationAsync {
@@ -97,5 +95,8 @@ pub trait RunOperationAsync {
 }
 
 pub(crate) fn run_operation_url(base_url: &str) -> String {
-    format!("{}/chains/main/blocks/head/helpers/scripts/run_operation", base_url)
+    format!(
+        "{}/chains/main/blocks/head/helpers/scripts/run_operation",
+        base_url
+    )
 }

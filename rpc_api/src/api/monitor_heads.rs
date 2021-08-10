@@ -1,9 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display};
-use serde::{Serialize, Deserialize};
 
-use types::BlockHash;
-use crate::{BoxFuture, BoxStream};
 use crate::api::TransportError;
+use crate::{BoxFuture, BoxStream};
+use types::BlockHash;
 
 #[derive(thiserror::Error, Debug)]
 pub enum MonitorHeadsError {
@@ -18,7 +18,7 @@ impl Display for MonitorHeadsError {
         match self {
             Self::ParseChunk(err) => err.fmt(f),
             Self::Transport(err) => err.fmt(f),
-            Self::Unknown(err) => write!(f, "Unknown! {}", err)
+            Self::Unknown(err) => write!(f, "Unknown! {}", err),
         }
     }
 }
@@ -32,7 +32,8 @@ pub struct BlockHead {
 }
 
 pub type MonitorHeadsResult = Result<BlockHead, MonitorHeadsError>;
-pub type StartMonitorHeadsResult = Result<BoxStream<'static, MonitorHeadsResult>, MonitorHeadsError>;
+pub type StartMonitorHeadsResult =
+    Result<BoxStream<'static, MonitorHeadsResult>, MonitorHeadsError>;
 
 pub trait MonitorHeadsAsync {
     fn monitor_heads(&self) -> BoxFuture<'static, StartMonitorHeadsResult>;

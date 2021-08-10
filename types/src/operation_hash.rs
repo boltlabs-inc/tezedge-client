@@ -1,10 +1,10 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryInto;
 use std::fmt::{self, Debug};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use crypto::{Prefix, WithPrefix, WithoutPrefix};
-use crypto::base58check::{FromBase58Check, ToBase58Check};
 use super::FromPrefixedBase58CheckError;
+use crypto::base58check::{FromBase58Check, ToBase58Check};
+use crypto::{Prefix, WithPrefix, WithoutPrefix};
 
 type OperationHashInner = [u8; 32];
 
@@ -32,9 +32,7 @@ impl OperationHash {
 
 impl ToBase58Check for OperationHash {
     fn to_base58check(&self) -> String {
-        self.0
-            .with_prefix(Prefix::B)
-            .to_base58check()
+        self.0.with_prefix(Prefix::B).to_base58check()
     }
 }
 
@@ -52,23 +50,20 @@ impl Debug for OperationHash {
 
 impl Serialize for OperationHash {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
-        serializer.serialize_str(
-            &self.to_base58check()
-        )
+        serializer.serialize_str(&self.to_base58check())
     }
 }
 
 impl<'de> Deserialize<'de> for OperationHash {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         let encoded = String::deserialize(deserializer)?;
 
-        Self::from_base58check(&encoded)
-            .map_err(|err| {
-                serde::de::Error::custom(err)
-            })
+        Self::from_base58check(&encoded).map_err(|err| serde::de::Error::custom(err))
     }
 }

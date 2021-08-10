@@ -15,9 +15,7 @@ impl From<TezosSignedTx> for OperationSignatureInfo {
     fn from(sig_info: TezosSignedTx) -> Self {
         OperationSignatureInfo {
             operation_hash: sig_info.get_operation_hash().to_string(),
-            operation_with_signature: hex::encode(
-                sig_info.get_sig_op_contents(),
-            ),
+            operation_with_signature: hex::encode(sig_info.get_sig_op_contents()),
             signature: sig_info.get_signature().to_string(),
         }
     }

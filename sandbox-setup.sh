@@ -45,7 +45,7 @@ eval "$(SANDBOX_TEZOS_TMP_CLIENT=$PWD/sandbox_data/tezos/client $TEZOS_DIR/src/b
 
 sleep 5
 # activate alpha protocol
-log "activate alpha..."
+log "activate alpha and other protocols..."
 set -x
 tezos-activate-alpha
 set +x

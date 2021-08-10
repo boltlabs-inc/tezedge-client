@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
-use crate::BoxFuture;
 use crate::api::TransportError;
+use crate::BoxFuture;
 
 #[derive(thiserror::Error, Debug)]
 pub enum GetChainIDError {
@@ -14,7 +14,7 @@ impl Display for GetChainIDError {
         write!(f, "getting main chain id failed! Reason: ")?;
         match self {
             Self::Transport(err) => err.fmt(f),
-            Self::Unknown(err) => write!(f, "Unknown! {}", err)
+            Self::Unknown(err) => write!(f, "Unknown! {}", err),
         }
     }
 }

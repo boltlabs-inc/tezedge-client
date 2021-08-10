@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
-use crate::BoxFuture;
 use crate::api::TransportError;
+use crate::BoxFuture;
 
 #[derive(thiserror::Error, Debug)]
 pub enum InjectOperationsError {
@@ -14,7 +14,7 @@ impl Display for InjectOperationsError {
         write!(f, "injecting operation failed! Reason: ")?;
         match self {
             Self::Transport(err) => err.fmt(f),
-            Self::Unknown(err) => write!(f, "Unknown! {}", err)
+            Self::Unknown(err) => write!(f, "Unknown! {}", err),
         }
     }
 }
@@ -22,10 +22,7 @@ impl Display for InjectOperationsError {
 pub type InjectOperationsResult = Result<serde_json::Value, InjectOperationsError>;
 
 pub trait InjectOperations {
-    fn inject_operations(
-        &self,
-        operation_with_signature: &str,
-    ) -> InjectOperationsResult;
+    fn inject_operations(&self, operation_with_signature: &str) -> InjectOperationsResult;
 }
 
 pub trait InjectOperationsAsync {
