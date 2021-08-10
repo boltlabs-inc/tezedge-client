@@ -138,7 +138,7 @@ async fn test_add_funding_transaction_sandbox() {
     let mut i = 0;
     for o in block_operations {
         i += 1;
-        println!("{} => block hash: {:?}", i, o.hash.to_base58check());
+        println!("{} => op hash: {:?}", i, o.hash.to_base58check());
         println!("{} => branch hash: {:?}", i, o.branch.to_base58check());
         for c in o.contents {
             match c {
@@ -146,8 +146,8 @@ async fn test_add_funding_transaction_sandbox() {
 
                     for contract in &op.metadata.operation_result.originated_contracts {
                         println!("[!] contract address: {:?}", contract.to_base58check());
-                        println!("[!] Mismatch op-hash: {} ?= {}", o.hash.to_base58check(), contract_op_hash);
-                        // assert_eq!(o.hash.to_base58check(), contract_op_hash);
+                        println!("[!] Found op-hash: {} ?= {}", o.hash.to_base58check(), contract_op_hash);
+                        assert_eq!(o.hash.to_base58check(), contract_op_hash);
                         contract_address = contract.to_base58check();
                         // println!("[!] full op: {:?}", &op);
                     }
@@ -157,6 +157,7 @@ async fn test_add_funding_transaction_sandbox() {
                 BlockOperationContent::Delegation(_) => println!("delegation"),
                 BlockOperationContent::Other => println!("other"),
             }
+            // TODO: break after 20 blocks?
         }
     }
 
@@ -190,7 +191,7 @@ async fn test_add_funding_transaction_sandbox() {
     async_api.inject_operations(&signed.operation_with_signature).await.unwrap();
     assert_eq!(
         async_api.get_pending_operation_status(&op_hash).await.unwrap(),
-        PendingOperationStatus::Applied,
+        PendingOperationStatus::Finished,
     );
 
     loop {
