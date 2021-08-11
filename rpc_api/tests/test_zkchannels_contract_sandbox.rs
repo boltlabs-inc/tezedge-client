@@ -68,9 +68,9 @@ async fn contract_origination_helper(port: u32, cust_funding: String, merch_fund
     let mut contract_address = String::from("");
     let block_operations = async_api.block_get_operations(&latest_block_hash).await.unwrap();
     assert!(block_operations.len() >= 1);
-    let mut block_count = 0;
+    let mut op_count = 0;
     for o in block_operations {
-        block_count += 1;
+        op_count += 1;
         // println!("{} => op hash: {:?}", i, o.hash.to_base58check());
         // println!("{} => branch hash: {:?}", i, o.branch.to_base58check());
         for c in o.contents {
@@ -78,8 +78,6 @@ async fn contract_origination_helper(port: u32, cust_funding: String, merch_fund
                 BlockOperationContent::Origination(op) => {
 
                     for contract in &op.metadata.operation_result.originated_contracts {
-                        // println!("[!] contract address: {:?}", contract.to_base58check());
-                        // println!("[!] Found op-hash: {} ?= {}", o.hash.to_base58check(), op_hash);
                         assert_eq!(o.hash.to_base58check(), op_hash);
                         contract_address = contract.to_base58check();
                         break;
@@ -90,15 +88,48 @@ async fn contract_origination_helper(port: u32, cust_funding: String, merch_fund
                 BlockOperationContent::Delegation(_) => {},
                 BlockOperationContent::Other => {},
             }
-            // exit after 20 blocks
-            if block_count > BLOCK_LEN {
-                break;
-            }
         }
     }
     
     (op_hash, contract_address)
 }
+
+async fn search_transaction_helper(port: u32, op_hash: String, contract_address: String) {
+    let (_, async_api) = build_sandbox_http_apis(port);
+
+    let mut current_block_hash = async_api.get_head_block_hash().await.unwrap();
+
+    // search up to some constant number of blocks from latest block
+    let mut block_count = 0;
+    loop {
+        let block_operations = async_api.block_get_operations(&current_block_hash).await.unwrap();
+        assert!(block_operations.len() >= 1);
+        let mut op_count = 0;
+        for o in block_operations {
+            op_count += 1;
+            for c in o.contents {
+                match c {
+                    BlockOperationContent::Origination(_) => {},
+                    BlockOperationContent::Reveal(_) => {},
+                    BlockOperationContent::Transaction(op) => {
+                        println!("found transaction: {:?}", &o.hash);
+                    },
+                    BlockOperationContent::Delegation(_) => {},
+                    BlockOperationContent::Other => {},
+                }
+            }
+        }
+        block_count += 1;
+        // TODO: how do I get block hash of the previous block?
+
+        // exit after 20 blocks
+        if block_count > BLOCK_LEN {
+            break;
+        }
+    }
+
+}
+
 
 #[tokio::test]
 async fn test_zkchannels_contract_sandbox() {
@@ -205,4 +236,5 @@ async fn test_add_funding_transaction_sandbox() {
     }
     
     println!("transaction successfuly created: {}", op_hash);
+    search_transaction_helper(port, op_hash, contract_address).await;
 }
