@@ -13,7 +13,9 @@ use utils::parse_float_amount;
 pub mod zkchannels;
 use zkchannels::{samples, contract_code_forged};
 
-async fn contract_origination_helper(port: u32, cust_funding: String, merch_funding: String) -> String {
+const BLOCK_LEN: i32 = 20;
+
+async fn contract_origination_helper(port: u32, cust_funding: String, merch_funding: String) -> (String, String) {
     let (_, async_api) = build_sandbox_http_apis(port);
     let cust_account = sandbox_account_1();
     let merch_account = sandbox_account_2();
@@ -59,9 +61,44 @@ async fn contract_origination_helper(port: u32, cust_funding: String, merch_fund
         }
     }
 
-    op_hash
-}
+    // get the latest block hash and search until we find the contract address with operation hash
+    let latest_block_hash = async_api.get_head_block_hash().await.unwrap();
+    // println!("[*] latest block hash: {:?}", latest_block_hash);
 
+    let mut contract_address = String::from("");
+    let block_operations = async_api.block_get_operations(&latest_block_hash).await.unwrap();
+    assert!(block_operations.len() >= 1);
+    let mut block_count = 0;
+    for o in block_operations {
+        block_count += 1;
+        // println!("{} => op hash: {:?}", i, o.hash.to_base58check());
+        // println!("{} => branch hash: {:?}", i, o.branch.to_base58check());
+        for c in o.contents {
+            match c {
+                BlockOperationContent::Origination(op) => {
+
+                    for contract in &op.metadata.operation_result.originated_contracts {
+                        // println!("[!] contract address: {:?}", contract.to_base58check());
+                        // println!("[!] Found op-hash: {} ?= {}", o.hash.to_base58check(), op_hash);
+                        assert_eq!(o.hash.to_base58check(), op_hash);
+                        contract_address = contract.to_base58check();
+                        break;
+                    }
+                },
+                BlockOperationContent::Reveal(_) => {},
+                BlockOperationContent::Transaction(_) => {},
+                BlockOperationContent::Delegation(_) => {},
+                BlockOperationContent::Other => {},
+            }
+            // exit after 20 blocks
+            if block_count > BLOCK_LEN {
+                break;
+            }
+        }
+    }
+    
+    (op_hash, contract_address)
+}
 
 #[tokio::test]
 async fn test_zkchannels_contract_sandbox() {
@@ -113,8 +150,6 @@ async fn test_zkchannels_contract_sandbox() {
     }
 
     println!("contract successfuly originated: {}", op_hash);
-    
-
 }
 
 #[tokio::test]
@@ -122,44 +157,11 @@ async fn test_add_funding_transaction_sandbox() {
     let port = 20000;
     let cust_funding = String::from("30000000");
     let merch_funding = String::from("10000000");
-    let contract_op_hash = contract_origination_helper(port, cust_funding, merch_funding).await;
-    println!("contract successfuly originated: {}", contract_op_hash);
+    let (contract_op_hash, contract_address) = contract_origination_helper(port, cust_funding, merch_funding).await;
+    println!("contract successfuly originated: {} => {}", contract_op_hash, contract_address);
 
     // get contract id from the op_hash
     let (_, async_api) = build_sandbox_http_apis(port);
-
-    // get the latest block hash and search until we find the contract address with operation hash
-    let latest_block_hash = async_api.get_head_block_hash().await.unwrap();
-    println!("[*] latest block hash: {:?}", latest_block_hash);
-
-    let mut contract_address = String::from("");
-    let block_operations = async_api.block_get_operations(&latest_block_hash).await.unwrap();
-    assert!(block_operations.len() >= 1);
-    let mut i = 0;
-    for o in block_operations {
-        i += 1;
-        println!("{} => op hash: {:?}", i, o.hash.to_base58check());
-        println!("{} => branch hash: {:?}", i, o.branch.to_base58check());
-        for c in o.contents {
-            match c {
-                BlockOperationContent::Origination(op) => {
-
-                    for contract in &op.metadata.operation_result.originated_contracts {
-                        println!("[!] contract address: {:?}", contract.to_base58check());
-                        println!("[!] Found op-hash: {} ?= {}", o.hash.to_base58check(), contract_op_hash);
-                        assert_eq!(o.hash.to_base58check(), contract_op_hash);
-                        contract_address = contract.to_base58check();
-                        // println!("[!] full op: {:?}", &op);
-                    }
-                },
-                BlockOperationContent::Reveal(_) => println!("reveal"),
-                BlockOperationContent::Transaction(_) => println!("transaction"),
-                BlockOperationContent::Delegation(_) => println!("delegation"),
-                BlockOperationContent::Other => println!("other"),
-            }
-            // TODO: break after 20 blocks?
-        }
-    }
 
     // // initiate transaction to fund the account
     let cust_account = sandbox_account_1();
