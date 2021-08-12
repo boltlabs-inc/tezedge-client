@@ -228,7 +228,7 @@ impl TestAll {
     {
         let mut command = self.cli_command();
         command
-            .arg("transfer-local")
+            .arg("unsafe-transfer-local")
             .arg("--no-prompt")
             .arg("--endpoint").arg(&self.endpoint)
             .arg("--private-key").arg(&self.private_key)
@@ -255,7 +255,7 @@ impl TestAll {
         let mut command = self.transfer_local_command(from, to, amount, fee.clone());
         let command_str = format!("{:?}", &command);
 
-        let output = command.output().expect("failed to get output of transfer-local command!");
+        let output = command.output().expect("failed to get output of unsafe-transfer-local command!");
 
         if output.status.success() {
             Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())

@@ -16,8 +16,8 @@ pub enum Command {
     Address(address::Address),
     Transfer(transfer::Transfer),
     Delegate(delegate::Delegate),
-    TransferLocal(transfer_local::TransferLocal),
-    DelegateLocal(delegate_local::DelegateLocal),
+    UnsafeTransferLocal(transfer_local::TransferLocal),
+    UnsafeDelegateLocal(delegate_local::DelegateLocal),
     #[structopt(setting(structopt::clap::AppSettings::Hidden))]
     Originate(originate::Originate),
 }
@@ -29,8 +29,8 @@ impl Command {
             Self::Address(cmd) => cmd.get_endpoint(),
             Self::Transfer(cmd) => cmd.get_endpoint(),
             Self::Delegate(cmd) => cmd.get_endpoint(),
-            Self::TransferLocal(cmd) => cmd.get_endpoint(),
-            Self::DelegateLocal(cmd) => cmd.get_endpoint(),
+            Self::UnsafeTransferLocal(cmd) => cmd.get_endpoint(),
+            Self::UnsafeDelegateLocal(cmd) => cmd.get_endpoint(),
             Self::Originate(cmd) => cmd.get_endpoint(),
         }
     }
